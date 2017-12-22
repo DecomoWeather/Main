@@ -1,0 +1,13 @@
+{
+  "weather": ["天气"],
+  "time": ["今天"],
+  "location": [""],
+  "weather_action": {
+    "打伞": ["打伞", "带伞"],
+    "add": []
+  },
+  "natural_phenomenon": {
+    "下雨": ["下雨", "有雨"],
+    "add": []
+  }
+}
