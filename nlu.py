@@ -11,4 +11,3 @@ class NLU:
         self.sys_inform_slot = config.weather_sys_inform_slot
         with open(semantic, 'r', encoding="utf-8") as f:
             self.value = json.load(f)
-        
