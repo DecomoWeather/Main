@@ -31,3 +31,14 @@ weather_kb = {
     },
 }
 ```
+
+#### NLU
+`return format`
+```python
+# for "weather", "time", "location"
+diaact = {"intent": "request+weather", "request_slot": {"weather": "UNK"}, "inform_slot": {"location": "北京"}}
+diaact = {"intent": "inform+location", "request_slot": {}, "inform_slot": {"location": "北京"}}
+
+# for "weather_action", "natural_phenomenon"
+diaact = {"intent": "request+weather_action", "request_slot": {"weather_action": {"打伞": "UNK", "others": "UNK"}}}
+```
