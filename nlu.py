@@ -12,6 +12,7 @@ class NLU:
         self.sys_inform_slot = config.weather_sys_inform_slot
         self.weather_action_set = config.weather_action_set
         self.natural_phenomenon_set = config.natural_phenomenon_set
+        self.clock_set = config.clock_set
         self.stopwords = ['，', '。', '？', '“', '”', '‘', '’', '；', '：', '！', '、', '（', '）', '-', '=',
                           '【', '】', ' ', '{', '}', ',', '.', '/', '\\', '(', ')', '?', '!', ';', ':', '\'',
                           '"', '[', ']', '~', '\n', '\t']
@@ -45,6 +46,8 @@ class NLU:
                     iob.append('B-time')
                 elif m[i] in self.value['location']:
                     iob.append('B-location')
+                elif m[i] in self.value['clock']:
+                    iob.append('B-clock')
                 else:
                     for j in self.value["weather_action"]:
                         if m[i] in self.value["weather_action"][j]:
@@ -60,31 +63,41 @@ class NLU:
 
     def iob_to_diaact(self, iob, string):
         """将iob转化为diaact,string是一个分词后列表"""
-        diaact = {"intent": "", "request_slot": {}, "inform_slot": {}}
+        diaact = {"intent": "", "request_slots": {}, "inform_slots": {}}
+        weather_action = {}
+        natural_phenomenon = {}
         for index, value in enumerate(iob):
             if value == "O":
                 continue
             else:
                 slot = value.split('-')[1]
                 if slot in self.sys_request_slot:
-                    diaact["inform_slot"][slot] = string[index]
+                    diaact["inform_slots"][slot] = string[index]
+                    if slot == 'time':
+                        diaact["inform_slots"][slot] = self.value['time'].index(string[index])
                 else:
                     if slot == "weather":
-                        diaact["request_slot"][slot] = 'UNK'
+                        diaact["request_slots"][slot] = 'UNK'
                     elif slot in self.weather_action_set:
-                        diaact["request_slot"]["weather_action"][slot] = 'UNK'
+                        weather_action[slot] = 'UNK'
                     elif slot in self.natural_phenomenon_set:
-                        diaact["request_slot"]["natural_phenomenon"][slot] = 'UNK'
+                        natural_phenomenon[slot] = 'UNK'
+                    elif slot in self.clock_set:
+                        diaact["request_slots"][slot] = 'UNK'
                     else:
                         pass
+        if weather_action != {}:
+            diaact['request_slots']['weather_action'] = weather_action
+        if natural_phenomenon != {}:
+            diaact["request_slots"]["natural_phenomenon"] = natural_phenomenon
 
-        if diaact["request_slot"]:
+        if diaact["request_slots"]:
             diaact["intent"] = "request"
-            for i in diaact["request_slot"]:
+            for i in diaact["request_slots"]:
                  diaact["intent"] += "+{}".format(i)
         else:
             diaact["intent"] = "inform"
-            for i in diaact["inform_slot"]:
+            for i in diaact["inform_slots"]:
                 diaact["intent"] += "+{}".format(i)
         return diaact
 
@@ -96,7 +109,7 @@ class NLU:
 
 # for test
 # nlu = NLU()
-# s = "今天北京的天气怎么样？"
+# s = "几点了？"
 # m, n = nlu.participle(s)
 # print(m, n)
 # iob = nlu.get_iob(m, n)
